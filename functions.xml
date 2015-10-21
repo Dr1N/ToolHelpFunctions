@@ -1,0 +1,1610 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="functions.xslt" ?>
+<functions xmlns:xsd="http://www.w3c.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="functions.xsd">
+  <!--типы данных-->
+  <dataType>
+    <type id="t1">HANDLE</type>
+    <type id="t2">DWORD</type>
+    <type id="t3">LPHEAPENTRY32</type>
+    <type id="t4">ULONG_PTR</type>
+    <type id="t5">LPHEAPLIST32</type>
+    <type id="t6">LPMODULEENTRY32</type>
+    <type id="t7">LPPROCESSENTRY32</type>
+    <type id="t8">LPTHREADENTRY32</type>
+    <type id="t9">LPCVOID</type>
+    <type id="t10">LPVOID</type>
+    <type id="t11">SIZE_T</type>
+    <type id="t12">BOOL</type>
+  </dataType>
+  
+  <!--требования-->
+  <requirements>
+    <requirement id="r1">
+      <name>Minimum supported client</name>
+      <value>Windows XP [desktop apps only]</value>
+    </requirement>
+    <requirement id="r2">
+      <name>Minimum supported server</name>
+      <value>Windows Server 2003 [desktop apps only]</value>
+    </requirement>
+    <requirement id="r3">
+      <name>Header</name>
+      <value>TlHelp32.h</value>
+    </requirement>
+    <requirement id="r4">
+      <name>Library</name>
+      <value>Kernel32.lib</value>
+    </requirement>
+    <requirement id="r5">
+      <name>DLL</name>
+      <value>Kernel32.dll</value>
+    </requirement>
+  </requirements>
+  
+  <!--функции-->
+  <function source="http://msdn.microsoft.com/en-us/library/ms682489(v=vs.85).aspx" requirement="r1 r2 r3 r4 r5" ansi-unicode="no">
+    <functionName>CreateToolhelp32Snapshot</functionName>
+    <functionDescription>
+      Takes a snapshot of the specified processes, as well as the heaps, modules, 
+      and threads used by these processes.
+    </functionDescription>
+    <parameters>
+      <parametr type="t2" way="_In_">
+        <parametrName>dwFlags</parametrName>
+        <parametrDescription>
+          The portions of the system to be included in the snapshot. 
+          This parameter can be one or more of the following values.
+        </parametrDescription>
+        <values>
+          <value>
+            <valueName>TH32CS_INHERIT</valueName>
+            <valueMeaning>
+              Indicates that the snapshot handle is to be inheritable.
+            </valueMeaning>
+          </value>
+          <value>
+            <valueName>TH32CS_SNAPALL</valueName>
+            <valueMeaning>
+              Includes all processes and threads in the system, plus the 
+              heaps and modules of the process specified in th32ProcessID. 
+              Equivalent to specifying the TH32CS_SNAPHEAPLIST, TH32CS_SNAPMODULE, 
+              TH32CS_SNAPPROCESS, and TH32CS_SNAPTHREAD values combined using an OR operation ('|').
+            </valueMeaning>
+          </value>
+          <value>
+            <valueName>TH32CS_SNAPHEAPLIST</valueName>
+            <valueMeaning>
+              Includes all heaps of the process specified in th32ProcessID 
+              in the snapshot. To enumerate the heaps, see Heap32ListFirst.
+            </valueMeaning>
+          </value>
+          <value>
+            <valueName>TH32CS_SNAPMODULE</valueName>
+            <valueMeaning>
+              Includes all modules of the process specified in th32ProcessID in the snapshot. 
+              To enumerate the modules, see Module32First. If the function fails with ERROR_BAD_LENGTH, 
+              retry the function until it succeeds.
+              64-bit Windows:  Using this flag in a 32-bit process includes the 32-bit 
+              modules of the process specified in th32ProcessID, while using it in a 64-bit process includes the 64-bit modules. 
+              To include the 32-bit modules of the process specified in th32ProcessID from a 64-bit process, use the TH32CS_SNAPMODULE32 flag.
+            </valueMeaning>
+          </value>
+          <value>
+            <valueName>TH32CS_SNAPMODULE32</valueName>
+            <valueMeaning>
+              Includes all 32-bit modules of the process specified in th32ProcessID in the snapshot 
+              when called from a 64-bit process. This flag can be combined with TH32CS_SNAPMODULE or TH32CS_SNAPALL. 
+              If the function fails with ERROR_BAD_LENGTH, retry the function until it succeeds.
+            </valueMeaning>
+          </value>
+          <value>
+            <valueName>TH32CS_SNAPPROCESS</valueName>
+            <valueMeaning>
+              Includes all processes in the system in the snapshot. To enumerate the processes, see Process32First.
+            </valueMeaning>
+          </value>
+          <value>
+            <valueName>TH32CS_SNAPTHREAD</valueName>
+            <valueMeaning>
+              Includes all threads in the system in the snapshot. To enumerate the threads, see Thread32First.
+              To identify the threads that belong to a specific process, compare its process identifier to the 
+              th32OwnerProcessID member of the THREADENTRY32 structure when enumerating the threads.
+            </valueMeaning>
+          </value>
+        </values>
+      </parametr>
+      <parametr type="t2" way="_In_">
+        <parametrName>th32ProcessID</parametrName>
+        <parametrDescription>
+          The process identifier of the process to be included in the snapshot. 
+          This parameter can be zero to indicate the current process. 
+          This parameter is used when the TH32CS_SNAPHEAPLIST, TH32CS_SNAPMODULE, 
+          TH32CS_SNAPMODULE32, or TH32CS_SNAPALL value is specified. Otherwise, 
+          it is ignored and all processes are included in the snapshot.
+          If the specified process is the Idle process or one of the CSRSS processes, 
+          this function fails and the last error code is ERROR_ACCESS_DENIED because 
+          their access restrictions prevent user-level code from opening them.
+          If the specified process is a 64-bit process and the caller is a 32-bit process, 
+          this function fails and the last error code is ERROR_PARTIAL_COPY (299).
+        </parametrDescription>
+      </parametr>
+    </parameters>
+    <returnValue type="t1">
+      If the function succeeds, it returns an open handle to the specified snapshot.
+      If the function fails, it returns INVALID_HANDLE_VALUE. To get extended error 
+      information, call GetLastError. Possible error codes include ERROR_BAD_LENGTH.
+    </returnValue>
+    <remarks>
+      The snapshot taken by this function is examined by the other tool help functions 
+      to provide their results. Access to the snapshot is read only. The snapshot 
+      handle acts as an object handle and is subject to the same rules regarding 
+      which processes and threads it is valid in. To enumerate the heap or module states 
+      for all processes, specify TH32CS_SNAPALL and set th32ProcessID to zero. Then, 
+      for each additional process in the snapshot, call CreateToolhelp32Snapshot again, 
+      specifying its process identifier and the TH32CS_SNAPHEAPLIST or TH32_SNAPMODULE value.
+      When taking snapshots that include heaps and modules for a process other than the current process, 
+      the CreateToolhelp32Snapshot function can fail or return incorrect information for a variety of reasons. 
+      For example, if the loader data table in the target process is corrupted or not initialized, 
+      or if the module list changes during the function call as a result of DLLs being loaded or unloaded, 
+      the function might fail with ERROR_BAD_LENGTH or other error code. Ensure that the target process 
+      was not started in a suspended state, and try calling the function again. If the function fails 
+      with ERROR_BAD_LENGTH when called with TH32CS_SNAPMODULE or TH32CS_SNAPMODULE32, call the function again until it succeeds.
+      The TH32CS_SNAPMODULE and TH32CS_SNAPMODULE32 flags do not retrieve handles for modules that were 
+      loaded with the LOAD_LIBRARY_AS_DATAFILE or similar flags. For more information, see LoadLibraryEx.
+      To destroy the snapshot, use the CloseHandle function.
+      Note that you can use the QueryFullProcessImageName function to retrieve the full name of 
+      an executable image for both 32- and 64-bit processes from a 32-bit process.
+    </remarks>
+    <examples>
+      <![CDATA[
+        #include <windows.h>
+        #include <tlhelp32.h>
+        #include <tchar.h>
+
+        //  Forward declarations:
+        BOOL GetProcessList( );
+        BOOL ListProcessModules( DWORD dwPID );
+        BOOL ListProcessThreads( DWORD dwOwnerPID );
+        void printError( TCHAR* msg );
+
+        int main( void )
+        {
+          GetProcessList( );
+          return 0;
+        }
+
+        BOOL GetProcessList( )
+        {
+          HANDLE hProcessSnap;
+          HANDLE hProcess;
+          PROCESSENTRY32 pe32;
+          DWORD dwPriorityClass;
+
+          // Take a snapshot of all processes in the system.
+          hProcessSnap = CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
+          if( hProcessSnap == INVALID_HANDLE_VALUE )
+          {
+            printError( TEXT("CreateToolhelp32Snapshot (of processes)") );
+            return( FALSE );
+          }
+
+          // Set the size of the structure before using it.
+          pe32.dwSize = sizeof( PROCESSENTRY32 );
+
+          // Retrieve information about the first process,
+          // and exit if unsuccessful
+          if( !Process32First( hProcessSnap, &pe32 ) )
+          {
+            printError( TEXT("Process32First") ); // show cause of failure
+            CloseHandle( hProcessSnap );          // clean the snapshot object
+            return( FALSE );
+          }
+
+          // Now walk the snapshot of processes, and
+          // display information about each process in turn
+          do
+          {
+            _tprintf( TEXT("\n\n=====================================================" ));
+            _tprintf( TEXT("\nPROCESS NAME:  %s"), pe32.szExeFile );
+            _tprintf( TEXT("\n-------------------------------------------------------" ));
+
+            // Retrieve the priority class.
+            dwPriorityClass = 0;
+            hProcess = OpenProcess( PROCESS_ALL_ACCESS, FALSE, pe32.th32ProcessID );
+            if( hProcess == NULL )
+              printError( TEXT("OpenProcess") );
+            else
+            {
+              dwPriorityClass = GetPriorityClass( hProcess );
+              if( !dwPriorityClass )
+                printError( TEXT("GetPriorityClass") );
+              CloseHandle( hProcess );
+            }
+
+            _tprintf( TEXT("\n  Process ID        = 0x%08X"), pe32.th32ProcessID );
+            _tprintf( TEXT("\n  Thread count      = %d"),   pe32.cntThreads );
+            _tprintf( TEXT("\n  Parent process ID = 0x%08X"), pe32.th32ParentProcessID );
+            _tprintf( TEXT("\n  Priority base     = %d"), pe32.pcPriClassBase );
+            if( dwPriorityClass )
+              _tprintf( TEXT("\n  Priority class    = %d"), dwPriorityClass );
+
+            // List the modules and threads associated with this process
+            ListProcessModules( pe32.th32ProcessID );
+            ListProcessThreads( pe32.th32ProcessID );
+
+          } while( Process32Next( hProcessSnap, &pe32 ) );
+
+          CloseHandle( hProcessSnap );
+          return( TRUE );
+        }
+
+
+        BOOL ListProcessModules( DWORD dwPID )
+        {
+          HANDLE hModuleSnap = INVALID_HANDLE_VALUE;
+          MODULEENTRY32 me32;
+
+          // Take a snapshot of all modules in the specified process.
+          hModuleSnap = CreateToolhelp32Snapshot( TH32CS_SNAPMODULE, dwPID );
+          if( hModuleSnap == INVALID_HANDLE_VALUE )
+          {
+            printError( TEXT("CreateToolhelp32Snapshot (of modules)") );
+            return( FALSE );
+          }
+
+          // Set the size of the structure before using it.
+          me32.dwSize = sizeof( MODULEENTRY32 );
+
+          // Retrieve information about the first module,
+          // and exit if unsuccessful
+          if( !Module32First( hModuleSnap, &me32 ) )
+          {
+            printError( TEXT("Module32First") );  // show cause of failure
+            CloseHandle( hModuleSnap );           // clean the snapshot object
+            return( FALSE );
+          }
+
+          // Now walk the module list of the process,
+          // and display information about each module
+          do
+          {
+            _tprintf( TEXT("\n\n     MODULE NAME:     %s"),   me32.szModule );
+            _tprintf( TEXT("\n     Executable     = %s"),     me32.szExePath );
+            _tprintf( TEXT("\n     Process ID     = 0x%08X"),         me32.th32ProcessID );
+            _tprintf( TEXT("\n     Ref count (g)  = 0x%04X"),     me32.GlblcntUsage );
+            _tprintf( TEXT("\n     Ref count (p)  = 0x%04X"),     me32.ProccntUsage );
+            _tprintf( TEXT("\n     Base address   = 0x%08X"), (DWORD) me32.modBaseAddr );
+            _tprintf( TEXT("\n     Base size      = %d"),             me32.modBaseSize );
+
+          } while( Module32Next( hModuleSnap, &me32 ) );
+
+          CloseHandle( hModuleSnap );
+          return( TRUE );
+        }
+
+        BOOL ListProcessThreads( DWORD dwOwnerPID ) 
+        { 
+          HANDLE hThreadSnap = INVALID_HANDLE_VALUE; 
+          THREADENTRY32 te32; 
+ 
+          // Take a snapshot of all running threads  
+          hThreadSnap = CreateToolhelp32Snapshot( TH32CS_SNAPTHREAD, 0 ); 
+          if( hThreadSnap == INVALID_HANDLE_VALUE ) 
+            return( FALSE ); 
+ 
+          // Fill in the size of the structure before using it. 
+          te32.dwSize = sizeof(THREADENTRY32); 
+ 
+          // Retrieve information about the first thread,
+          // and exit if unsuccessful
+          if( !Thread32First( hThreadSnap, &te32 ) ) 
+          {
+            printError( TEXT("Thread32First") ); // show cause of failure
+            CloseHandle( hThreadSnap );          // clean the snapshot object
+            return( FALSE );
+          }
+
+          // Now walk the thread list of the system,
+          // and display information about each thread
+          // associated with the specified process
+          do 
+          { 
+            if( te32.th32OwnerProcessID == dwOwnerPID )
+            {
+              _tprintf( TEXT("\n\n     THREAD ID      = 0x%08X"), te32.th32ThreadID ); 
+              _tprintf( TEXT("\n     Base priority  = %d"), te32.tpBasePri ); 
+              _tprintf( TEXT("\n     Delta priority = %d"), te32.tpDeltaPri ); 
+              _tprintf( TEXT("\n"));
+            }
+          } while( Thread32Next(hThreadSnap, &te32 ) ); 
+
+          CloseHandle( hThreadSnap );
+          return( TRUE );
+        }
+
+        void printError( TCHAR* msg )
+        {
+          DWORD eNum;
+          TCHAR sysMsg[256];
+          TCHAR* p;
+
+          eNum = GetLastError( );
+          FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                 NULL, eNum,
+                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                 sysMsg, 256, NULL );
+
+          // Trim the end of the line and terminate it with a null
+          p = sysMsg;
+          while( ( *p > 31 ) || ( *p == 9 ) )
+            ++p;
+          do { *p-- = 0; } while( ( p >= sysMsg ) &&
+                                  ( ( *p == '.' ) || ( *p < 33 ) ) );
+
+          // Display the message
+          _tprintf( TEXT("\n  WARNING: %s failed with error %d (%s)"), msg, eNum, sysMsg );
+        }
+      ]]>
+    </examples>
+  </function>
+  
+  <function source="http://msdn.microsoft.com/en-us/library/ms683245(v=vs.85).aspx" requirement="r1 r2 r3 r4 r5" ansi-unicode="no">
+    <functionName>Heap32First</functionName>
+    <functionDescription>
+      Retrieves information about the first block of a heap that has been allocated by a process.
+    </functionDescription>
+    <parameters>
+      <parametr type="t3" way="_Inout_">
+        <parametrName>lphe</parametrName>
+        <parametrDescription>
+          A pointer to a HEAPENTRY32 structure.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t2" way="_In_">
+        <parametrName>th32ProcessID</parametrName>
+        <parametrDescription>
+          The identifier of the process context that owns the heap.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t4" way="_In_">
+        <parametrName>th32HeapID</parametrName>
+        <parametrDescription>
+          The identifier of the heap to be enumerated.
+        </parametrDescription>
+      </parametr>
+    </parameters>
+    <returnValue type="t12">
+      Returns TRUE if information for the first heap block has been copied to the buffer or FALSE otherwise. 
+      The ERROR_NO_MORE_FILES error value is returned by the GetLastError function if the heap is invalid or empty.
+    </returnValue>
+    <remarks>
+      The calling application must set the dwSize member of HEAPENTRY32 to the size, in bytes, of the structure. 
+      Heap32First changes dwSize to the number of bytes written to the structure. 
+      This will never be greater than the initial value of dwSize, but it may be smaller. 
+      If the value is smaller, do not rely on the values of any members whose offsets are greater than this value.
+      To access subsequent blocks of the same heap, use the Heap32Next function.
+    </remarks>
+    <examples>
+      <![CDATA[
+        #include <windows.h>
+        #include <tlhelp32.h>
+        #include <stdio.h>
+
+        int main( void )
+        {
+           HEAPLIST32 hl;
+   
+           HANDLE hHeapSnap = CreateToolhelp32Snapshot(TH32CS_SNAPHEAPLIST, GetCurrentProcessId());
+   
+           hl.dwSize = sizeof(HEAPLIST32);
+   
+           if ( hHeapSnap == INVALID_HANDLE_VALUE )
+           {
+              printf ("CreateToolhelp32Snapshot failed (%d)\n", GetLastError());
+              return 1;
+           }
+   
+           if( Heap32ListFirst( hHeapSnap, &hl ) )
+           {
+              do
+              {
+                 HEAPENTRY32 he;
+                 ZeroMemory(&he, sizeof(HEAPENTRY32));
+                 he.dwSize = sizeof(HEAPENTRY32);
+
+                 if( Heap32First( &he, GetCurrentProcessId(), hl.th32HeapID ) )
+                 {
+                    printf( "\nHeap ID: %d\n", hl.th32HeapID );
+                    do
+                    {
+                       printf( "Block size: %d\n", he.dwBlockSize );
+               
+                       he.dwSize = sizeof(HEAPENTRY32);
+                    } while( Heap32Next(&he) );
+                 }
+                 hl.dwSize = sizeof(HEAPLIST32);
+              } while (Heap32ListNext( hHeapSnap, &hl ));
+           }
+           else printf ("Cannot list first heap (%d)\n", GetLastError());
+   
+           CloseHandle(hHeapSnap); 
+
+           return 0;
+        }
+      ]]>
+    </examples>
+  </function>
+
+  <function source="http://msdn.microsoft.com/en-us/library/ms683432(v=vs.85).aspx" requirement="r1 r2 r3 r4 r5" ansi-unicode="no">
+    <functionName>Heap32ListFirst</functionName>
+    <functionDescription>
+      Retrieves information about the first heap that has been allocated by a specified process.
+    </functionDescription>
+    <parameters>
+      <parametr type="t1" way="_In_">
+        <parametrName>hSnapshot</parametrName>
+        <parametrDescription>
+          A handle to the snapshot returned from a previous call to the CreateToolhelp32Snapshot function.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t5" way="_Inout_">
+        <parametrName>lphl</parametrName>
+        <parametrDescription>
+          A pointer to a HEAPLIST32 structure.
+        </parametrDescription>
+      </parametr>
+    </parameters>
+    <returnValue type="t12">
+      Returns TRUE if the first entry of the heap list has been copied to the buffer or FALSE otherwise. 
+      The ERROR_NO_MORE_FILES error value is returned by the GetLastError function when no heap list exists or the snapshot does not contain heap list information.
+    </returnValue>
+    <remarks>
+      The calling application must set the dwSize member of HEAPLIST32 to the size, in bytes, of the structure. 
+      Heap32ListFirst changes dwSize to the number of bytes written to the structure. 
+      This will never be greater than the initial value of dwSize, but it may be smaller. 
+      If the value is smaller, do not rely on the values of any members whose offsets are greater than this value.
+      To retrieve information about other heaps in the heap list, use the Heap32ListNext function.
+    </remarks>
+    <examples>
+      <![CDATA[
+        #include <windows.h>
+        #include <tlhelp32.h>
+        #include <stdio.h>
+
+        int main( void )
+        {
+           HEAPLIST32 hl;
+   
+           HANDLE hHeapSnap = CreateToolhelp32Snapshot(TH32CS_SNAPHEAPLIST, GetCurrentProcessId());
+   
+           hl.dwSize = sizeof(HEAPLIST32);
+   
+           if ( hHeapSnap == INVALID_HANDLE_VALUE )
+           {
+              printf ("CreateToolhelp32Snapshot failed (%d)\n", GetLastError());
+              return 1;
+           }
+   
+           if( Heap32ListFirst( hHeapSnap, &hl ) )
+           {
+              do
+              {
+                 HEAPENTRY32 he;
+                 ZeroMemory(&he, sizeof(HEAPENTRY32));
+                 he.dwSize = sizeof(HEAPENTRY32);
+
+                 if( Heap32First( &he, GetCurrentProcessId(), hl.th32HeapID ) )
+                 {
+                    printf( "\nHeap ID: %d\n", hl.th32HeapID );
+                    do
+                    {
+                       printf( "Block size: %d\n", he.dwBlockSize );
+               
+                       he.dwSize = sizeof(HEAPENTRY32);
+                    } while( Heap32Next(&he) );
+                 }
+                 hl.dwSize = sizeof(HEAPLIST32);
+              } while (Heap32ListNext( hHeapSnap, &hl ));
+           }
+           else printf ("Cannot list first heap (%d)\n", GetLastError());
+   
+           CloseHandle(hHeapSnap); 
+
+           return 0;
+        }
+      ]]>
+    </examples>
+  </function>
+
+  <function source="http://msdn.microsoft.com/en-us/library/ms683436(v=vs.85).aspx" requirement="r1 r2 r3 r4 r5" ansi-unicode="no">
+    <functionName>Heap32ListNext</functionName>
+    <functionDescription>
+      Retrieves information about the next heap that has been allocated by a process.
+    </functionDescription>
+    <parameters>
+      <parametr type="t1" way="_In_">
+        <parametrName>hSnapshot</parametrName>
+        <parametrDescription>
+          A handle to the snapshot returned from a previous call to the CreateToolhelp32Snapshot function.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t5" way="_Out_">
+        <parametrName>lphl</parametrName>
+        <parametrDescription>
+          A pointer to a HEAPLIST32 structure.
+        </parametrDescription>
+      </parametr>
+    </parameters>
+    <returnValue type="t12">
+      Returns TRUE if the next entry of the heap list has been copied to the buffer or FALSE otherwise. 
+      The ERROR_NO_MORE_FILES error value is returned by the GetLastError function when no more entries in the heap list exist.
+    </returnValue>
+    <remarks>
+      To retrieve information about the first heap in a heap list, use the Heap32ListFirst function.
+    </remarks>
+    <examples>
+      <![CDATA[
+        #include <windows.h>
+        #include <tlhelp32.h>
+        #include <stdio.h>
+
+        int main( void )
+        {
+           HEAPLIST32 hl;
+   
+           HANDLE hHeapSnap = CreateToolhelp32Snapshot(TH32CS_SNAPHEAPLIST, GetCurrentProcessId());
+   
+           hl.dwSize = sizeof(HEAPLIST32);
+   
+           if ( hHeapSnap == INVALID_HANDLE_VALUE )
+           {
+              printf ("CreateToolhelp32Snapshot failed (%d)\n", GetLastError());
+              return 1;
+           }
+   
+           if( Heap32ListFirst( hHeapSnap, &hl ) )
+           {
+              do
+              {
+                 HEAPENTRY32 he;
+                 ZeroMemory(&he, sizeof(HEAPENTRY32));
+                 he.dwSize = sizeof(HEAPENTRY32);
+
+                 if( Heap32First( &he, GetCurrentProcessId(), hl.th32HeapID ) )
+                 {
+                    printf( "\nHeap ID: %d\n", hl.th32HeapID );
+                    do
+                    {
+                       printf( "Block size: %d\n", he.dwBlockSize );
+               
+                       he.dwSize = sizeof(HEAPENTRY32);
+                    } while( Heap32Next(&he) );
+                 }
+                 hl.dwSize = sizeof(HEAPLIST32);
+              } while (Heap32ListNext( hHeapSnap, &hl ));
+           }
+           else printf ("Cannot list first heap (%d)\n", GetLastError());
+   
+           CloseHandle(hHeapSnap); 
+
+           return 0;
+        }
+      ]]>
+    </examples>
+  </function>
+
+  <function source="http://msdn.microsoft.com/en-us/library/ms683440(v=vs.85).aspx" requirement="r1 r2 r3 r4 r5" ansi-unicode="no">
+    <functionName>Heap32Next</functionName>
+    <functionDescription>
+      Retrieves information about the next block of a heap that has been allocated by a process.
+    </functionDescription>
+    <parameters>
+      <parametr type="t3" way="_Out_">
+        <parametrName>lphl</parametrName>
+        <parametrDescription>
+          A pointer to a HEAPLIST32 structure.
+        </parametrDescription>
+      </parametr>
+    </parameters>
+    <returnValue type="t12">
+      Returns TRUE if information about the next block in the heap has been copied to the buffer or FALSE otherwise. 
+      The GetLastError function returns ERROR_NO_MORE_FILES when no more objects in the heap exist and ERROR_INVALID_DATA 
+      if the heap appears to be corrupt or is modified during the walk in such a way that Heap32Next cannot continue.
+    </returnValue>
+    <remarks>
+      o retrieve information for the first block of a heap, use the Heap32First function.
+      The Heap32Next function does not maintain a reference to the target process. 
+      If the target process dies, the system may create a new process using the same process identifier. 
+      Therefore, the caller should maintain a reference to the target process as long as it is using Heap32Next.
+    </remarks>
+    <examples>
+      <![CDATA[
+        #include <windows.h>
+        #include <tlhelp32.h>
+        #include <stdio.h>
+
+        int main( void )
+        {
+           HEAPLIST32 hl;
+   
+           HANDLE hHeapSnap = CreateToolhelp32Snapshot(TH32CS_SNAPHEAPLIST, GetCurrentProcessId());
+   
+           hl.dwSize = sizeof(HEAPLIST32);
+   
+           if ( hHeapSnap == INVALID_HANDLE_VALUE )
+           {
+              printf ("CreateToolhelp32Snapshot failed (%d)\n", GetLastError());
+              return 1;
+           }
+   
+           if( Heap32ListFirst( hHeapSnap, &hl ) )
+           {
+              do
+              {
+                 HEAPENTRY32 he;
+                 ZeroMemory(&he, sizeof(HEAPENTRY32));
+                 he.dwSize = sizeof(HEAPENTRY32);
+
+                 if( Heap32First( &he, GetCurrentProcessId(), hl.th32HeapID ) )
+                 {
+                    printf( "\nHeap ID: %d\n", hl.th32HeapID );
+                    do
+                    {
+                       printf( "Block size: %d\n", he.dwBlockSize );
+               
+                       he.dwSize = sizeof(HEAPENTRY32);
+                    } while( Heap32Next(&he) );
+                 }
+                 hl.dwSize = sizeof(HEAPLIST32);
+              } while (Heap32ListNext( hHeapSnap, &hl ));
+           }
+           else printf ("Cannot list first heap (%d)\n", GetLastError());
+   
+           CloseHandle(hHeapSnap); 
+
+           return 0;
+        }
+      ]]>
+    </examples>
+  </function>
+
+  <function source="http://msdn.microsoft.com/en-us/library/ms684218(v=vs.85).aspx" requirement="r1 r2 r3 r4 r5" ansi-unicode="yes">
+    <functionName>Module32First</functionName>
+    <functionDescription>
+      Retrieves information about the first module associated with a process.
+    </functionDescription>
+    <parameters>
+      <parametr type="t1" way="_In_">
+        <parametrName>hSnapshot</parametrName>
+        <parametrDescription>
+          A handle to the snapshot returned from a previous call to the CreateToolhelp32Snapshot function.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t6" way="_Inout_">
+        <parametrName>lpme</parametrName>
+        <parametrDescription>
+          A pointer to a MODULEENTRY32 structure.
+        </parametrDescription>
+      </parametr>
+    </parameters>
+    <returnValue type="t12">
+      Returns TRUE if the first entry of the module list has been copied to the buffer or FALSE otherwise. 
+      The ERROR_NO_MORE_FILES error value is returned by the GetLastError function if no modules exist 
+      or the snapshot does not contain module information.
+    </returnValue>
+    <remarks>
+      The calling application must set the dwSize member of MODULEENTRY32 to the size, in bytes, of the structure.
+      To retrieve information about other modules associated with the specified process, use the Module32Next function.
+    </remarks>
+    <examples>
+      <![CDATA[
+        #include <windows.h> 
+        #include <tlhelp32.h> 
+        #include <tchar.h> 
+ 
+        //  Forward declarations: 
+        BOOL ListProcessModules( DWORD dwPID ); 
+        void printError( TCHAR* msg ); 
+ 
+        int main( void )
+        {
+          ListProcessModules(GetCurrentProcessId() );
+          return 0;
+        }
+
+        BOOL ListProcessModules( DWORD dwPID ) 
+        { 
+          HANDLE hModuleSnap = INVALID_HANDLE_VALUE; 
+          MODULEENTRY32 me32; 
+ 
+        //  Take a snapshot of all modules in the specified process. 
+          hModuleSnap = CreateToolhelp32Snapshot( TH32CS_SNAPMODULE, dwPID ); 
+          if( hModuleSnap == INVALID_HANDLE_VALUE ) 
+          { 
+            printError( TEXT("CreateToolhelp32Snapshot (of modules)") ); 
+            return( FALSE ); 
+          } 
+ 
+        //  Set the size of the structure before using it. 
+          me32.dwSize = sizeof( MODULEENTRY32 ); 
+ 
+        //  Retrieve information about the first module, 
+        //  and exit if unsuccessful 
+          if( !Module32First( hModuleSnap, &me32 ) ) 
+          { 
+            printError( TEXT("Module32First") );  // Show cause of failure 
+            CloseHandle( hModuleSnap );     // Must clean up the snapshot object! 
+            return( FALSE ); 
+          } 
+ 
+        //  Now walk the module list of the process, 
+        //  and display information about each module 
+          do 
+          { 
+            _tprintf( TEXT("\n\n     MODULE NAME:     %s"),             me32.szModule ); 
+            _tprintf( TEXT("\n     executable     = %s"),             me32.szExePath ); 
+            _tprintf( TEXT("\n     process ID     = 0x%08X"),         me32.th32ProcessID ); 
+            _tprintf( TEXT("\n     ref count (g)  =     0x%04X"),     me32.GlblcntUsage ); 
+            _tprintf( TEXT("\n     ref count (p)  =     0x%04X"),     me32.ProccntUsage ); 
+            _tprintf( TEXT("\n     base address   = 0x%08X"), (DWORD) me32.modBaseAddr ); 
+            _tprintf( TEXT("\n     base size      = %d"),             me32.modBaseSize ); 
+ 
+          } while( Module32Next( hModuleSnap, &me32 ) ); 
+
+            _tprintf( TEXT("\n"));
+ 
+        //  Do not forget to clean up the snapshot object. 
+          CloseHandle( hModuleSnap ); 
+          return( TRUE ); 
+        } 
+ 
+ 
+        void printError( TCHAR* msg )
+        {
+          DWORD eNum;
+          TCHAR sysMsg[256];
+          TCHAR* p;
+
+          eNum = GetLastError( );
+          FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                 NULL, eNum,
+                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                 sysMsg, 256, NULL );
+
+          // Trim the end of the line and terminate it with a null
+          p = sysMsg;
+          while( ( *p > 31 ) || ( *p == 9 ) )
+            ++p;
+          do { *p-- = 0; } while( ( p >= sysMsg ) &&
+                                  ( ( *p == '.' ) || ( *p < 33 ) ) );
+
+          // Display the message
+          _tprintf( TEXT("\n  WARNING: %s failed with error %d (%s)"), msg, eNum, sysMsg );
+        }
+      ]]>
+    </examples>
+  </function>
+
+  <function source="http://msdn.microsoft.com/en-us/library/ms684221(v=vs.85).aspx" requirement="r1 r2 r3 r4 r5" ansi-unicode="yes">
+    <functionName>Module32Next</functionName>
+    <functionDescription>
+      Retrieves information about the next module associated with a process or thread.
+    </functionDescription>
+    <parameters>
+      <parametr type="t1" way="_In_">
+        <parametrName>hSnapshot</parametrName>
+        <parametrDescription>
+          A handle to the snapshot returned from a previous call to the CreateToolhelp32Snapshot function.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t6" way="_Out_">
+        <parametrName>lpme</parametrName>
+        <parametrDescription>
+          A pointer to a MODULEENTRY32 structure.
+        </parametrDescription>
+      </parametr>
+    </parameters>
+    <returnValue type="t12">
+      Returns TRUE if the next entry of the module list has been copied to the buffer or FALSE otherwise. 
+      The ERROR_NO_MORE_FILES error value is returned by the GetLastError function if no more modules exist.
+    </returnValue>
+    <remarks>
+      To retrieve information about first module associated with a process, use the Module32First function.
+    </remarks>
+    <examples>
+      <![CDATA[
+        #include <windows.h> 
+        #include <tlhelp32.h> 
+        #include <tchar.h> 
+ 
+        //  Forward declarations: 
+        BOOL ListProcessModules( DWORD dwPID ); 
+        void printError( TCHAR* msg ); 
+ 
+        int main( void )
+        {
+          ListProcessModules(GetCurrentProcessId() );
+          return 0;
+        }
+
+        BOOL ListProcessModules( DWORD dwPID ) 
+        { 
+          HANDLE hModuleSnap = INVALID_HANDLE_VALUE; 
+          MODULEENTRY32 me32; 
+ 
+        //  Take a snapshot of all modules in the specified process. 
+          hModuleSnap = CreateToolhelp32Snapshot( TH32CS_SNAPMODULE, dwPID ); 
+          if( hModuleSnap == INVALID_HANDLE_VALUE ) 
+          { 
+            printError( TEXT("CreateToolhelp32Snapshot (of modules)") ); 
+            return( FALSE ); 
+          } 
+ 
+        //  Set the size of the structure before using it. 
+          me32.dwSize = sizeof( MODULEENTRY32 ); 
+ 
+        //  Retrieve information about the first module, 
+        //  and exit if unsuccessful 
+          if( !Module32First( hModuleSnap, &me32 ) ) 
+          { 
+            printError( TEXT("Module32First") );  // Show cause of failure 
+            CloseHandle( hModuleSnap );     // Must clean up the snapshot object! 
+            return( FALSE ); 
+          } 
+ 
+        //  Now walk the module list of the process, 
+        //  and display information about each module 
+          do 
+          { 
+            _tprintf( TEXT("\n\n     MODULE NAME:     %s"),             me32.szModule ); 
+            _tprintf( TEXT("\n     executable     = %s"),             me32.szExePath ); 
+            _tprintf( TEXT("\n     process ID     = 0x%08X"),         me32.th32ProcessID ); 
+            _tprintf( TEXT("\n     ref count (g)  =     0x%04X"),     me32.GlblcntUsage ); 
+            _tprintf( TEXT("\n     ref count (p)  =     0x%04X"),     me32.ProccntUsage ); 
+            _tprintf( TEXT("\n     base address   = 0x%08X"), (DWORD) me32.modBaseAddr ); 
+            _tprintf( TEXT("\n     base size      = %d"),             me32.modBaseSize ); 
+ 
+          } while( Module32Next( hModuleSnap, &me32 ) ); 
+
+            _tprintf( TEXT("\n"));
+ 
+        //  Do not forget to clean up the snapshot object. 
+          CloseHandle( hModuleSnap ); 
+          return( TRUE ); 
+        } 
+ 
+ 
+        void printError( TCHAR* msg )
+        {
+          DWORD eNum;
+          TCHAR sysMsg[256];
+          TCHAR* p;
+
+          eNum = GetLastError( );
+          FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                 NULL, eNum,
+                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                 sysMsg, 256, NULL );
+
+          // Trim the end of the line and terminate it with a null
+          p = sysMsg;
+          while( ( *p > 31 ) || ( *p == 9 ) )
+            ++p;
+          do { *p-- = 0; } while( ( p >= sysMsg ) &&
+                                  ( ( *p == '.' ) || ( *p < 33 ) ) );
+
+          // Display the message
+          _tprintf( TEXT("\n  WARNING: %s failed with error %d (%s)"), msg, eNum, sysMsg );
+        }
+      ]]>
+    </examples>
+  </function>
+
+  <function source="http://msdn.microsoft.com/en-us/library/ms684834(v=vs.85).aspx" requirement="r1 r2 r3 r4 r5" ansi-unicode="yes">
+    <functionName>Process32First</functionName>
+    <functionDescription>
+      Retrieves information about the first process encountered in a system snapshot.
+    </functionDescription>
+    <parameters>
+      <parametr type="t1" way="_In_">
+        <parametrName>hSnapshot</parametrName>
+        <parametrDescription>
+          A handle to the snapshot returned from a previous call to the CreateToolhelp32Snapshot function.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t7" way="_Inout_">
+        <parametrName>lppe</parametrName>
+        <parametrDescription>
+          A pointer to a PROCESSENTRY32 structure. It contains process information such as the name of the executable file, 
+          the process identifier, and the process identifier of the parent process.
+        </parametrDescription>
+      </parametr>
+    </parameters>
+    <returnValue type="t12">
+      Returns TRUE if the first entry of the process list has been copied to the buffer or FALSE otherwise. 
+      The ERROR_NO_MORE_FILES error value is returned by the GetLastError function if no processes exist or the snapshot does not contain process information.
+    </returnValue>
+    <remarks>
+      The calling application must set the dwSize member of PROCESSENTRY32 to the size, in bytes, of the structure.
+      To retrieve information about other processes recorded in the same snapshot, use the Process32Next function.
+    </remarks>
+    <examples>
+      <![CDATA[
+        #include <windows.h>
+        #include <tlhelp32.h>
+        #include <tchar.h>
+
+        //  Forward declarations:
+        BOOL GetProcessList( );
+        BOOL ListProcessModules( DWORD dwPID );
+        BOOL ListProcessThreads( DWORD dwOwnerPID );
+        void printError( TCHAR* msg );
+
+        int main( void )
+        {
+          GetProcessList( );
+          return 0;
+        }
+
+        BOOL GetProcessList( )
+        {
+          HANDLE hProcessSnap;
+          HANDLE hProcess;
+          PROCESSENTRY32 pe32;
+          DWORD dwPriorityClass;
+
+          // Take a snapshot of all processes in the system.
+          hProcessSnap = CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
+          if( hProcessSnap == INVALID_HANDLE_VALUE )
+          {
+            printError( TEXT("CreateToolhelp32Snapshot (of processes)") );
+            return( FALSE );
+          }
+
+          // Set the size of the structure before using it.
+          pe32.dwSize = sizeof( PROCESSENTRY32 );
+
+          // Retrieve information about the first process,
+          // and exit if unsuccessful
+          if( !Process32First( hProcessSnap, &pe32 ) )
+          {
+            printError( TEXT("Process32First") ); // show cause of failure
+            CloseHandle( hProcessSnap );          // clean the snapshot object
+            return( FALSE );
+          }
+
+          // Now walk the snapshot of processes, and
+          // display information about each process in turn
+          do
+          {
+            _tprintf( TEXT("\n\n=====================================================" ));
+            _tprintf( TEXT("\nPROCESS NAME:  %s"), pe32.szExeFile );
+            _tprintf( TEXT("\n-------------------------------------------------------" ));
+
+            // Retrieve the priority class.
+            dwPriorityClass = 0;
+            hProcess = OpenProcess( PROCESS_ALL_ACCESS, FALSE, pe32.th32ProcessID );
+            if( hProcess == NULL )
+              printError( TEXT("OpenProcess") );
+            else
+            {
+              dwPriorityClass = GetPriorityClass( hProcess );
+              if( !dwPriorityClass )
+                printError( TEXT("GetPriorityClass") );
+              CloseHandle( hProcess );
+            }
+
+            _tprintf( TEXT("\n  Process ID        = 0x%08X"), pe32.th32ProcessID );
+            _tprintf( TEXT("\n  Thread count      = %d"),   pe32.cntThreads );
+            _tprintf( TEXT("\n  Parent process ID = 0x%08X"), pe32.th32ParentProcessID );
+            _tprintf( TEXT("\n  Priority base     = %d"), pe32.pcPriClassBase );
+            if( dwPriorityClass )
+              _tprintf( TEXT("\n  Priority class    = %d"), dwPriorityClass );
+
+            // List the modules and threads associated with this process
+            ListProcessModules( pe32.th32ProcessID );
+            ListProcessThreads( pe32.th32ProcessID );
+
+          } while( Process32Next( hProcessSnap, &pe32 ) );
+
+          CloseHandle( hProcessSnap );
+          return( TRUE );
+        }
+
+
+        BOOL ListProcessModules( DWORD dwPID )
+        {
+          HANDLE hModuleSnap = INVALID_HANDLE_VALUE;
+          MODULEENTRY32 me32;
+
+          // Take a snapshot of all modules in the specified process.
+          hModuleSnap = CreateToolhelp32Snapshot( TH32CS_SNAPMODULE, dwPID );
+          if( hModuleSnap == INVALID_HANDLE_VALUE )
+          {
+            printError( TEXT("CreateToolhelp32Snapshot (of modules)") );
+            return( FALSE );
+          }
+
+          // Set the size of the structure before using it.
+          me32.dwSize = sizeof( MODULEENTRY32 );
+
+          // Retrieve information about the first module,
+          // and exit if unsuccessful
+          if( !Module32First( hModuleSnap, &me32 ) )
+          {
+            printError( TEXT("Module32First") );  // show cause of failure
+            CloseHandle( hModuleSnap );           // clean the snapshot object
+            return( FALSE );
+          }
+
+          // Now walk the module list of the process,
+          // and display information about each module
+          do
+          {
+            _tprintf( TEXT("\n\n     MODULE NAME:     %s"),   me32.szModule );
+            _tprintf( TEXT("\n     Executable     = %s"),     me32.szExePath );
+            _tprintf( TEXT("\n     Process ID     = 0x%08X"),         me32.th32ProcessID );
+            _tprintf( TEXT("\n     Ref count (g)  = 0x%04X"),     me32.GlblcntUsage );
+            _tprintf( TEXT("\n     Ref count (p)  = 0x%04X"),     me32.ProccntUsage );
+            _tprintf( TEXT("\n     Base address   = 0x%08X"), (DWORD) me32.modBaseAddr );
+            _tprintf( TEXT("\n     Base size      = %d"),             me32.modBaseSize );
+
+          } while( Module32Next( hModuleSnap, &me32 ) );
+
+          CloseHandle( hModuleSnap );
+          return( TRUE );
+        }
+
+        BOOL ListProcessThreads( DWORD dwOwnerPID ) 
+        { 
+          HANDLE hThreadSnap = INVALID_HANDLE_VALUE; 
+          THREADENTRY32 te32; 
+ 
+          // Take a snapshot of all running threads  
+          hThreadSnap = CreateToolhelp32Snapshot( TH32CS_SNAPTHREAD, 0 ); 
+          if( hThreadSnap == INVALID_HANDLE_VALUE ) 
+            return( FALSE ); 
+ 
+          // Fill in the size of the structure before using it. 
+          te32.dwSize = sizeof(THREADENTRY32); 
+ 
+          // Retrieve information about the first thread,
+          // and exit if unsuccessful
+          if( !Thread32First( hThreadSnap, &te32 ) ) 
+          {
+            printError( TEXT("Thread32First") ); // show cause of failure
+            CloseHandle( hThreadSnap );          // clean the snapshot object
+            return( FALSE );
+          }
+
+          // Now walk the thread list of the system,
+          // and display information about each thread
+          // associated with the specified process
+          do 
+          { 
+            if( te32.th32OwnerProcessID == dwOwnerPID )
+            {
+              _tprintf( TEXT("\n\n     THREAD ID      = 0x%08X"), te32.th32ThreadID ); 
+              _tprintf( TEXT("\n     Base priority  = %d"), te32.tpBasePri ); 
+              _tprintf( TEXT("\n     Delta priority = %d"), te32.tpDeltaPri ); 
+              _tprintf( TEXT("\n"));
+            }
+          } while( Thread32Next(hThreadSnap, &te32 ) ); 
+
+          CloseHandle( hThreadSnap );
+          return( TRUE );
+        }
+
+        void printError( TCHAR* msg )
+        {
+          DWORD eNum;
+          TCHAR sysMsg[256];
+          TCHAR* p;
+
+          eNum = GetLastError( );
+          FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                 NULL, eNum,
+                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                 sysMsg, 256, NULL );
+
+          // Trim the end of the line and terminate it with a null
+          p = sysMsg;
+          while( ( *p > 31 ) || ( *p == 9 ) )
+            ++p;
+          do { *p-- = 0; } while( ( p >= sysMsg ) &&
+                                  ( ( *p == '.' ) || ( *p < 33 ) ) );
+
+          // Display the message
+          _tprintf( TEXT("\n  WARNING: %s failed with error %d (%s)"), msg, eNum, sysMsg );
+        }
+
+      ]]>
+    </examples>
+  </function>
+
+  <function source="http://msdn.microsoft.com/en-us/library/ms684836(v=vs.85).aspx" requirement="r1 r2 r3 r4 r5" ansi-unicode="yes">
+    <functionName>Process32Next</functionName>
+    <functionDescription>
+      Retrieves information about the next process recorded in a system snapshot.
+    </functionDescription>
+    <parameters>
+      <parametr type="t1" way="_In_">
+        <parametrName>hSnapshot</parametrName>
+        <parametrDescription>
+          A handle to the snapshot returned from a previous call to the CreateToolhelp32Snapshot function.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t7" way="_Out_">
+        <parametrName>lppe</parametrName>
+        <parametrDescription>
+          A pointer to a PROCESSENTRY32 structure.
+        </parametrDescription>
+      </parametr>
+    </parameters>
+    <returnValue type="t12">
+      Returns TRUE if the next entry of the process list has been copied to the buffer or FALSE otherwise. 
+      The ERROR_NO_MORE_FILES error value is returned by the GetLastError function if no processes exist or the snapshot does not contain process information.
+    </returnValue>
+    <remarks>
+      To retrieve information about the first process recorded in a snapshot, use the Process32First function.
+    </remarks>
+    <examples>
+      <![CDATA[
+        #include <windows.h>
+        #include <tlhelp32.h>
+        #include <tchar.h>
+
+        //  Forward declarations:
+        BOOL GetProcessList( );
+        BOOL ListProcessModules( DWORD dwPID );
+        BOOL ListProcessThreads( DWORD dwOwnerPID );
+        void printError( TCHAR* msg );
+
+        int main( void )
+        {
+          GetProcessList( );
+          return 0;
+        }
+
+        BOOL GetProcessList( )
+        {
+          HANDLE hProcessSnap;
+          HANDLE hProcess;
+          PROCESSENTRY32 pe32;
+          DWORD dwPriorityClass;
+
+          // Take a snapshot of all processes in the system.
+          hProcessSnap = CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
+          if( hProcessSnap == INVALID_HANDLE_VALUE )
+          {
+            printError( TEXT("CreateToolhelp32Snapshot (of processes)") );
+            return( FALSE );
+          }
+
+          // Set the size of the structure before using it.
+          pe32.dwSize = sizeof( PROCESSENTRY32 );
+
+          // Retrieve information about the first process,
+          // and exit if unsuccessful
+          if( !Process32First( hProcessSnap, &pe32 ) )
+          {
+            printError( TEXT("Process32First") ); // show cause of failure
+            CloseHandle( hProcessSnap );          // clean the snapshot object
+            return( FALSE );
+          }
+
+          // Now walk the snapshot of processes, and
+          // display information about each process in turn
+          do
+          {
+            _tprintf( TEXT("\n\n=====================================================" ));
+            _tprintf( TEXT("\nPROCESS NAME:  %s"), pe32.szExeFile );
+            _tprintf( TEXT("\n-------------------------------------------------------" ));
+
+            // Retrieve the priority class.
+            dwPriorityClass = 0;
+            hProcess = OpenProcess( PROCESS_ALL_ACCESS, FALSE, pe32.th32ProcessID );
+            if( hProcess == NULL )
+              printError( TEXT("OpenProcess") );
+            else
+            {
+              dwPriorityClass = GetPriorityClass( hProcess );
+              if( !dwPriorityClass )
+                printError( TEXT("GetPriorityClass") );
+              CloseHandle( hProcess );
+            }
+
+            _tprintf( TEXT("\n  Process ID        = 0x%08X"), pe32.th32ProcessID );
+            _tprintf( TEXT("\n  Thread count      = %d"),   pe32.cntThreads );
+            _tprintf( TEXT("\n  Parent process ID = 0x%08X"), pe32.th32ParentProcessID );
+            _tprintf( TEXT("\n  Priority base     = %d"), pe32.pcPriClassBase );
+            if( dwPriorityClass )
+              _tprintf( TEXT("\n  Priority class    = %d"), dwPriorityClass );
+
+            // List the modules and threads associated with this process
+            ListProcessModules( pe32.th32ProcessID );
+            ListProcessThreads( pe32.th32ProcessID );
+
+          } while( Process32Next( hProcessSnap, &pe32 ) );
+
+          CloseHandle( hProcessSnap );
+          return( TRUE );
+        }
+
+
+        BOOL ListProcessModules( DWORD dwPID )
+        {
+          HANDLE hModuleSnap = INVALID_HANDLE_VALUE;
+          MODULEENTRY32 me32;
+
+          // Take a snapshot of all modules in the specified process.
+          hModuleSnap = CreateToolhelp32Snapshot( TH32CS_SNAPMODULE, dwPID );
+          if( hModuleSnap == INVALID_HANDLE_VALUE )
+          {
+            printError( TEXT("CreateToolhelp32Snapshot (of modules)") );
+            return( FALSE );
+          }
+
+          // Set the size of the structure before using it.
+          me32.dwSize = sizeof( MODULEENTRY32 );
+
+          // Retrieve information about the first module,
+          // and exit if unsuccessful
+          if( !Module32First( hModuleSnap, &me32 ) )
+          {
+            printError( TEXT("Module32First") );  // show cause of failure
+            CloseHandle( hModuleSnap );           // clean the snapshot object
+            return( FALSE );
+          }
+
+          // Now walk the module list of the process,
+          // and display information about each module
+          do
+          {
+            _tprintf( TEXT("\n\n     MODULE NAME:     %s"),   me32.szModule );
+            _tprintf( TEXT("\n     Executable     = %s"),     me32.szExePath );
+            _tprintf( TEXT("\n     Process ID     = 0x%08X"),         me32.th32ProcessID );
+            _tprintf( TEXT("\n     Ref count (g)  = 0x%04X"),     me32.GlblcntUsage );
+            _tprintf( TEXT("\n     Ref count (p)  = 0x%04X"),     me32.ProccntUsage );
+            _tprintf( TEXT("\n     Base address   = 0x%08X"), (DWORD) me32.modBaseAddr );
+            _tprintf( TEXT("\n     Base size      = %d"),             me32.modBaseSize );
+
+          } while( Module32Next( hModuleSnap, &me32 ) );
+
+          CloseHandle( hModuleSnap );
+          return( TRUE );
+        }
+
+        BOOL ListProcessThreads( DWORD dwOwnerPID ) 
+        { 
+          HANDLE hThreadSnap = INVALID_HANDLE_VALUE; 
+          THREADENTRY32 te32; 
+ 
+          // Take a snapshot of all running threads  
+          hThreadSnap = CreateToolhelp32Snapshot( TH32CS_SNAPTHREAD, 0 ); 
+          if( hThreadSnap == INVALID_HANDLE_VALUE ) 
+            return( FALSE ); 
+ 
+          // Fill in the size of the structure before using it. 
+          te32.dwSize = sizeof(THREADENTRY32); 
+ 
+          // Retrieve information about the first thread,
+          // and exit if unsuccessful
+          if( !Thread32First( hThreadSnap, &te32 ) ) 
+          {
+            printError( TEXT("Thread32First") ); // show cause of failure
+            CloseHandle( hThreadSnap );          // clean the snapshot object
+            return( FALSE );
+          }
+
+          // Now walk the thread list of the system,
+          // and display information about each thread
+          // associated with the specified process
+          do 
+          { 
+            if( te32.th32OwnerProcessID == dwOwnerPID )
+            {
+              _tprintf( TEXT("\n\n     THREAD ID      = 0x%08X"), te32.th32ThreadID ); 
+              _tprintf( TEXT("\n     Base priority  = %d"), te32.tpBasePri ); 
+              _tprintf( TEXT("\n     Delta priority = %d"), te32.tpDeltaPri ); 
+              _tprintf( TEXT("\n"));
+            }
+          } while( Thread32Next(hThreadSnap, &te32 ) ); 
+
+          CloseHandle( hThreadSnap );
+          return( TRUE );
+        }
+
+        void printError( TCHAR* msg )
+        {
+          DWORD eNum;
+          TCHAR sysMsg[256];
+          TCHAR* p;
+
+          eNum = GetLastError( );
+          FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                 NULL, eNum,
+                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                 sysMsg, 256, NULL );
+
+          // Trim the end of the line and terminate it with a null
+          p = sysMsg;
+          while( ( *p > 31 ) || ( *p == 9 ) )
+            ++p;
+          do { *p-- = 0; } while( ( p >= sysMsg ) &&
+                                  ( ( *p == '.' ) || ( *p < 33 ) ) );
+
+          // Display the message
+          _tprintf( TEXT("\n  WARNING: %s failed with error %d (%s)"), msg, eNum, sysMsg );
+        }
+      ]]>
+    </examples>
+  </function>
+
+  <function source="http://msdn.microsoft.com/en-us/library/ms686728(v=vs.85).aspx" requirement="r1 r2 r3 r4 r5" ansi-unicode="no">
+    <functionName>Thread32First</functionName>
+    <functionDescription>
+      Retrieves information about the first thread of any process encountered in a system snapshot.
+    </functionDescription>
+    <parameters>
+      <parametr type="t1" way="_In_">
+        <parametrName>hSnapshot</parametrName>
+        <parametrDescription>
+          A handle to the snapshot returned from a previous call to the CreateToolhelp32Snapshot function.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t8" way="_Inout_">
+        <parametrName>lpte</parametrName>
+        <parametrDescription>
+          A pointer to a THREADENTRY32 structure.
+        </parametrDescription>
+      </parametr>
+    </parameters>
+    <returnValue type="t12">
+      Returns TRUE if the first entry of the thread list has been copied to the buffer or FALSE otherwise. 
+      The ERROR_NO_MORE_FILES error value is returned by the GetLastError function if no threads exist or the snapshot does not contain thread information.
+    </returnValue>
+    <remarks>
+      The calling application must set the dwSize member of THREADENTRY32 to the size, in bytes, of the structure. 
+      Thread32First changes dwSize to the number of bytes written to the structure. 
+      This will never be greater than the initial value of dwSize, but it may be smaller. 
+      If the value is smaller, do not rely on the values of any members whose offsets are greater than this value.
+      To retrieve information about other threads recorded in the same snapshot, use the Thread32Next function.
+    </remarks>
+    <examples>
+      <![CDATA[
+        #include <windows.h>
+        #include <tlhelp32.h>
+        #include <tchar.h>
+
+        //  Forward declarations:
+        BOOL ListProcessThreads( DWORD dwOwnerPID );
+        void printError( TCHAR* msg );
+
+        int main( void )
+        {
+          ListProcessThreads(GetCurrentProcessId() );
+          return 0;
+        }
+
+        BOOL ListProcessThreads( DWORD dwOwnerPID ) 
+        { 
+          HANDLE hThreadSnap = INVALID_HANDLE_VALUE; 
+          THREADENTRY32 te32; 
+ 
+          // Take a snapshot of all running threads  
+          hThreadSnap = CreateToolhelp32Snapshot( TH32CS_SNAPTHREAD, 0 ); 
+          if( hThreadSnap == INVALID_HANDLE_VALUE ) 
+            return( FALSE ); 
+ 
+          // Fill in the size of the structure before using it. 
+          te32.dwSize = sizeof(THREADENTRY32 ); 
+ 
+          // Retrieve information about the first thread,
+          // and exit if unsuccessful
+          if( !Thread32First( hThreadSnap, &te32 ) ) 
+          {
+            printError( TEXT("Thread32First") );  // Show cause of failure
+            CloseHandle( hThreadSnap );     // Must clean up the snapshot object!
+            return( FALSE );
+          }
+
+          // Now walk the thread list of the system,
+          // and display information about each thread
+          // associated with the specified process
+          do 
+          { 
+            if( te32.th32OwnerProcessID == dwOwnerPID )
+            {
+              _tprintf( TEXT("\n     THREAD ID      = 0x%08X"), te32.th32ThreadID ); 
+              _tprintf( TEXT("\n     base priority  = %d"), te32.tpBasePri ); 
+              _tprintf( TEXT("\n     delta priority = %d"), te32.tpDeltaPri ); 
+            }
+          } while( Thread32Next(hThreadSnap, &te32 ) );
+
+          _tprintf( TEXT("\n"));
+
+        //  Don't forget to clean up the snapshot object.
+          CloseHandle( hThreadSnap );
+          return( TRUE );
+        }
+
+        void printError( TCHAR* msg )
+        {
+          DWORD eNum;
+          TCHAR sysMsg[256];
+          TCHAR* p;
+
+          eNum = GetLastError( );
+          FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                 NULL, eNum,
+                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                 sysMsg, 256, NULL );
+
+          // Trim the end of the line and terminate it with a null
+          p = sysMsg;
+          while( ( *p > 31 ) || ( *p == 9 ) )
+            ++p;
+          do { *p-- = 0; } while( ( p >= sysMsg ) &&
+                                  ( ( *p == '.' ) || ( *p < 33 ) ) );
+
+          // Display the message
+          _tprintf( TEXT("\n  WARNING: %s failed with error %d (%s)"), msg, eNum, sysMsg );
+        }
+      ]]>
+    </examples>
+  </function>
+
+  <function source="http://msdn.microsoft.com/en-us/library/ms686731(v=vs.85).aspx" requirement="r1 r2 r3 r4 r5" ansi-unicode="no">
+    <functionName>Thread32Next</functionName>
+    <functionDescription>
+      Retrieves information about the next thread of any process encountered in the system memory snapshot.
+    </functionDescription>
+    <parameters>
+      <parametr type="t1" way="_In_">
+        <parametrName>hSnapshot</parametrName>
+        <parametrDescription>
+          A handle to the snapshot returned from a previous call to the CreateToolhelp32Snapshot function.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t8" way="_Out_">
+        <parametrName>lpte</parametrName>
+        <parametrDescription>
+          A pointer to a THREADENTRY32 structure.
+        </parametrDescription>
+      </parametr>
+    </parameters>
+    <returnValue type="t12">
+      Returns TRUE if the next entry of the thread list has been copied to the buffer or FALSE otherwise. 
+      The ERROR_NO_MORE_FILES error value is returned by the GetLastError function if no threads exist or the snapshot does not contain thread information.
+    </returnValue>
+    <remarks>
+      TTo retrieve information about the first thread recorded in a snapshot, use the Thread32First function.
+    </remarks>
+    <examples>
+      <![CDATA[
+        #include <windows.h>
+        #include <tlhelp32.h>
+        #include <tchar.h>
+
+        //  Forward declarations:
+        BOOL ListProcessThreads( DWORD dwOwnerPID );
+        void printError( TCHAR* msg );
+
+        int main( void )
+        {
+          ListProcessThreads(GetCurrentProcessId() );
+          return 0;
+        }
+
+        BOOL ListProcessThreads( DWORD dwOwnerPID ) 
+        { 
+          HANDLE hThreadSnap = INVALID_HANDLE_VALUE; 
+          THREADENTRY32 te32; 
+ 
+          // Take a snapshot of all running threads  
+          hThreadSnap = CreateToolhelp32Snapshot( TH32CS_SNAPTHREAD, 0 ); 
+          if( hThreadSnap == INVALID_HANDLE_VALUE ) 
+            return( FALSE ); 
+ 
+          // Fill in the size of the structure before using it. 
+          te32.dwSize = sizeof(THREADENTRY32 ); 
+ 
+          // Retrieve information about the first thread,
+          // and exit if unsuccessful
+          if( !Thread32First( hThreadSnap, &te32 ) ) 
+          {
+            printError( TEXT("Thread32First") );  // Show cause of failure
+            CloseHandle( hThreadSnap );     // Must clean up the snapshot object!
+            return( FALSE );
+          }
+
+          // Now walk the thread list of the system,
+          // and display information about each thread
+          // associated with the specified process
+          do 
+          { 
+            if( te32.th32OwnerProcessID == dwOwnerPID )
+            {
+              _tprintf( TEXT("\n     THREAD ID      = 0x%08X"), te32.th32ThreadID ); 
+              _tprintf( TEXT("\n     base priority  = %d"), te32.tpBasePri ); 
+              _tprintf( TEXT("\n     delta priority = %d"), te32.tpDeltaPri ); 
+            }
+          } while( Thread32Next(hThreadSnap, &te32 ) );
+
+          _tprintf( TEXT("\n"));
+
+        //  Don't forget to clean up the snapshot object.
+          CloseHandle( hThreadSnap );
+          return( TRUE );
+        }
+
+        void printError( TCHAR* msg )
+        {
+          DWORD eNum;
+          TCHAR sysMsg[256];
+          TCHAR* p;
+
+          eNum = GetLastError( );
+          FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                 NULL, eNum,
+                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                 sysMsg, 256, NULL );
+
+          // Trim the end of the line and terminate it with a null
+          p = sysMsg;
+          while( ( *p > 31 ) || ( *p == 9 ) )
+            ++p;
+          do { *p-- = 0; } while( ( p >= sysMsg ) &&
+                                  ( ( *p == '.' ) || ( *p < 33 ) ) );
+
+          // Display the message
+          _tprintf( TEXT("\n  WARNING: %s failed with error %d (%s)"), msg, eNum, sysMsg );
+        }
+      ]]>
+    </examples>
+  </function>
+
+  <function source="http://msdn.microsoft.com/en-us/library/ms686826(v=vs.85).aspx" requirement="r1 r2 r3 r4 r5" ansi-unicode="no">
+    <functionName>Toolhelp32ReadProcessMemory</functionName>
+    <functionDescription>
+      Copies memory allocated to another process into an application-supplied buffer.
+    </functionDescription>
+    <parameters>
+      <parametr type="t2" way="_In_">
+        <parametrName>th32ProcessID</parametrName>
+        <parametrDescription>
+          The identifier of the process whose memory is being copied. This parameter can be zero to copy the memory of the current process.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t9" way="_In_">
+        <parametrName>lpBaseAddress</parametrName>
+        <parametrDescription>
+          The base address in the specified process to read. Before transferring any data, the system verifies that all data in the base address 
+          and memory of the specified size is accessible for read access. If this is the case, the function proceeds. Otherwise, the function fails.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t10" way="_Out_">
+        <parametrName>lpBuffer</parametrName>
+        <parametrDescription>
+          A pointer to a buffer that receives the contents of the address space of the specified process.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t11" way="_In_">
+        <parametrName>cbRead</parametrName>
+        <parametrDescription>
+          The number of bytes to read from the specified process.
+        </parametrDescription>
+      </parametr>
+      <parametr type="t11" way="_Out_">
+        <parametrName>lpNumberOfBytesRead</parametrName>
+        <parametrDescription>
+          The number of bytes copied to the specified buffer. If this parameter is NULL, it is ignored.
+        </parametrDescription>
+      </parametr>
+    </parameters>
+    <returnValue type="t12">
+      Returns TRUE if successful.
+    </returnValue>
+  </function>
+</functions>

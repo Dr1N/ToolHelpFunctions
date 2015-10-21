@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <!--функции-->
+  <xs:element name="functions">
+    <xs:complexType>
+      <xs:sequence>
+        <!--типы данных-->
+        <xs:element name="dataType">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="type" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="id" type="xs:ID" use="required" />
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <!--требования-->
+        <xs:element name="requirements">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="requirement" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="name" type="xs:string" />
+                    <xs:element name="value" type="xs:string" />
+                  </xs:sequence>
+                  <xs:attribute name="id" type="xs:ID" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <!--функция-->
+        <xs:element name="function" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <!--имя-->
+              <xs:element name="functionName" type="xs:string" />
+              <!--описание-->
+              <xs:element name="functionDescription" type="xs:string" />
+              <!--параметры-->
+              <xs:element name="parameters">
+                <xs:complexType>
+                  <xs:sequence>
+                    <!--параметр-->
+                    <xs:element name="parametr" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="parametrName" type="xs:string" />
+                          <xs:element name="parametrDescription" type="xs:string" />
+                          <!--значения-->
+                          <xs:element name="values" minOccurs="0">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="value" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="valueName" type="xs:string" />
+                                      <xs:element name="valueMeaning" type="xs:string" />
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="type" type="xs:IDREF" />
+                        <xs:attribute name="way">
+                          <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                              <xs:enumeration value="_In_" />
+                              <xs:enumeration value="_Inout_" />
+                              <xs:enumeration value="_Out_" />
+                            </xs:restriction>
+                          </xs:simpleType>
+                        </xs:attribute>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <!--возвращаемое значение-->
+              <xs:element name="returnValue">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="type" type="xs:IDREF" />
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+              <!--замечание-->
+              <xs:element name="remarks" type="xs:string" />
+              <!--пример-->
+              <xs:element name="examples" type="xs:string" />
+              <!--требования-->
+            </xs:sequence>
+            <!--атрибут функции-->
+            <xs:attribute name="source" type="xs:anyURI" />
+            <xs:attribute name="requirement" type="xs:IDREFS" />
+            <xs:attribute name="ansi-unicode">
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:enumeration value="yes" />
+                  <xs:enumeration value="no" />
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
